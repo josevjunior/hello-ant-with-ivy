@@ -1,0 +1,36 @@
+<ivysettings>
+    
+    <caches defaultCacheDir="${user.home}/.ivy2/cache"/>
+    
+    <!-- credenciais do nexus -->
+    <credentials host="localhost" realm="Sonatype Nexus Repository Manager" username="admin" passwd="69060652-cb97-428a-b425-fd71e8b696ab"/>
+    
+    <property name="nexus-public" value="http://localhost:8081/repository/maven-public/"/>
+    <property name="nexus-releases" value="http://localhost:8081/repository/maven-releases/"/>
+    <property name="nexus-snapshots" value="http://localhost:8081/repository/maven-snapshots/"/>
+    
+    <resolvers>
+        <ibiblio name="local" m2compatible="true" root="file://${user.home}/.m2/repository"/>
+        <ibiblio name="public" m2compatible="true" root="https://repo1.maven.org/maven2/"/>
+
+        <ibiblio name="nexus" m2compatible="true" root="${nexus-public}"/>
+        <ibiblio name="nexus-releases" m2compatible="true" root="${nexus-releases}"/>
+        <ibiblio name="nexus-snapshots" m2compatible="true" root="${nexus-snapshots}" checkmodified="true" changingPattern="*-SNAPSHOT"/>
+
+        <filesystem name="local-publish" m2compatible="true">
+            <artifact pattern="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+        </filesystem>
+        <!--        <url name="nexus">
+            <artifact pattern="http://localhost:8081/repository/maven-releases/[organisation]/[module]/[artifact]/[revision]/[artifact]-[revision](-[classifier]).[ext]"/>
+        </url>-->
+
+        <chain name="default">
+            <resolver ref="local"/>
+            <resolver ref="public"/>
+            <resolver ref="nexus"/>
+        </chain>
+
+    </resolvers>
+
+    <settings defaultResolver="default"/>
+</ivysettings>

@@ -1,0 +1,9 @@
+/hello-ant-with-ivy.iml
+/.classpath
+/.project
+/ivy/
+/jar/
+/lib/
+/distrib/
+/.idea/
+/nbproject/

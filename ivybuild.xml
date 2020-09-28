@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="ivy.install.version" value="2.5.0"/>
+    <property name="ivy.jar.dir" value="${basedir}/ivy"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+    <property name="build.dir" value="target"/>
+    <property name="src.dir" value="src"/>
+
+    <!-- Validações -->
+    <fail message="Propriedade projectId deve ser informado no arquivo build.xml">
+        <condition>
+            <not>
+                <isset property="projectId"/>
+            </not>
+        </condition>
+    </fail>
+    <fail message="Propriedade version deve ser informado no arquivo build.xml">
+        <condition>
+            <not>
+                <isset property="version"/>
+            </not>
+        </condition>
+    </fail>
+    <condition property="groupId" value="br.com.sankhya">
+        <not>
+            <isset property="groupId"/>
+        </not>
+    </condition>
+
+    <target name="check-ivy">
+        <available file="${ivy.jar.file}" property="skip.download"/>
+    </target>
+
+    <!--<ivy:settings file="ivysettings.xml"/>-->
+
+    <target name="download-ivy" depends="check-ivy" unless="skip.download">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <!--  download Ivy from web site so that it can be used even without any special installation  -->
+        <echo message="installing ivy..."/>
+        <get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+             dest="${ivy.jar.file}" usetimestamp="true"/>
+    </target>
+    <!--  ================================= 
+     target: set-ivy         
+       this target is not necessary if you put ivy.jar in your ant lib directory
+       if you already have ivy in your ant lib, you can simply remove this
+       target and the dependency the 'go' target has on it
+    =================================  -->
+    <target name="set-ivy" depends="download-ivy" description="--> install ivy">
+        <!--  try to load ivy here from local ivy dir, in case the user has not already dropped
+        it into ant's lib dir (note that the latter copy will always take precedence).
+        We will not fail as long as the ivy jar is in at least one of ant's lib dir or 
+        the local lib dir.  -->
+        <path id="ivy.lib.path">
+            <pathelement location="${ivy.jar.file}"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+    </target>
+
+    <target name="clean-lib" description="--> clean lib folder">
+        <delete>
+            <fileset dir="lib" includes="*.*"/>
+        </delete>
+    </target>
+
+    <!-- targets que utilizam o ivy devem depender do target set-ivy que inclui o ivy no classpath -->
+    <target name="resolve" depends="set-ivy" description="--> retrieve dependencies with ivy">
+        <ivy:retrieve resolveMode="default"/>
+    </target>
+
+    <target name="clean-cache" depends="set-ivy" description="--> clean ivy's cache">
+        <ivy:cleancache/>
+    </target>
+
+    <target name="makepom" depends="resolve" description="--> Make Maven pom">
+        <ivy:makepom ivyfile="ivy.xml" pomfile="${build.dir}/${projectId}.pom">
+            <mapping conf="*" scope="compile"/>
+            <mapping conf="provided" scope="provided"/>
+        </ivy:makepom>
+    </target>
+
+    <target name="install" depends="jar,makepom,resolve" description="--> download and install dependencies locally">
+        <ivy:publish publishivy="false" revision="${version}" resolver="local-publish" overwrite="true" pubdate="now">
+            <artifacts pattern="${build.dir}/[artifact].[ext]"/>
+        </ivy:publish>
+    </target>
+
+</project>

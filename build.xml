@@ -1,0 +1,30 @@
+<project name="HelloWorld" default="run">
+
+    <property name="projectId" value="HelloWorld"/>
+    <property name="version" value="1.6-SNAPSHOT"/>
+
+    <import file="ivybuild.xml"/>
+    
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${build.dir}/classes"/>
+        <javac srcdir="src" destdir="${build.dir}/classes"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${build.dir}"/>
+        <jar destfile="${build.dir}/${projectId}.jar" basedir="${build.dir}/classes">
+            <manifest>
+                <attribute name="Main-Class" value="oata.HelloWorld"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="resolve">
+        <java jar="${build.dir}//HelloWorld.jar" fork="true"/>
+    </target>
+
+</project>
